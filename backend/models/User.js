@@ -19,6 +19,10 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 1, // 0: admin, 1: user, 2: vendor
   },
+  stripeCustomerId: {
+    type: String,
+    unique: true,
+  },
   //optional
   ph_num: {
     type: String,

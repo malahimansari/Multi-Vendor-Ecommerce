@@ -33,6 +33,10 @@ const orderSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  stripeCustomerId: {
+    type: String,
+    unique: true,
+  },
   date: {
     type: Date,
     default: Date.now,

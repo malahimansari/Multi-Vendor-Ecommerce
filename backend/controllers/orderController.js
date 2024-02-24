@@ -1,6 +1,8 @@
 const Product = require("../models/Product");
 const Order = require("../models/Order");
+const User = require("../models/User");
 const { v4: uuidv4 } = require("uuid");
+const paymentController = require('./paymentController');
 
 const generateOrderId = () => {
   return uuidv4();
@@ -9,7 +11,7 @@ const generateOrderId = () => {
 // create a new order
 const createOrder = async (req, res) => {
   try {
-    const { products } = req.body;
+    const { products, paymentMethod } = req.body;
 
     if (!products || !Array.isArray(products) || products.length === 0) {
       return res.status(400).json({ msg: "Invalid products array" });
@@ -27,11 +29,20 @@ const createOrder = async (req, res) => {
 
     await newOrder.save();
 
+    if (paymentMethod) {
+      // Retrieve the user from the database
+      const user = await User.findById(req.user.id);
+
+      // Charge the user using the provided payment method
+      await paymentController.createPaymentIntent(user, totalAmount, newOrder._id);
+    }
+
+
     res.status(201).json(newOrder);
   } catch (error) {
     console.error(error.message);
-    if (error.message === 'Product Not Found') {
-      return res.status(404).json({ msg: 'Product Not Found' });
+    if (error.message.includes('Product with ID')) {
+      return res.status(404).json({ msg: error.message });
     }
     res.status(500).json({ msg: "Server Error" });
   }
